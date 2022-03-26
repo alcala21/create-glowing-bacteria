@@ -1,41 +1,43 @@
-from hstest import CheckResult, StageTest, WrongAnswer, dynamic_test, TestedProgram
+from hstest import StageTest, dynamic_test, TestedProgram, WrongAnswer, CheckResult
 
-CORRECT = "CTGCAGACACGTTCATGATGACAAGACGTCAGTGAACTTAAGCTATGGGTCGACACACGTGATGGAGGAA"
+correct_parts = ["GACGTCTGTGCAAGTACTACTGTTC", "TGCAGTCACTTGAATTCGATACCCAGCTGTTATTTGTATAGTTCA",
+                 "CTGCAGACACGTTCATGATGACAAGACGT", "CAGTGAACTTAAGCTATGGGTCGACAATAAACATATCAAGT"]
 
-class GlowingBacteriaTest(StageTest):
-    @dynamic_test
+
+class RestrictionMakingTest(StageTest):
+
+    @dynamic_test()
     def test(self):
-        users_program = TestedProgram()
-        users_program.start()
+        program = TestedProgram()
+        program.start()
 
-        if not users_program.is_waiting_input():
+        if not program.is_waiting_input():
             raise WrongAnswer("You program should input the string")
 
-        reply = users_program.execute("GACGTCTGTGCAAGTACTACTGTTCTGCAGTCACTTGAATTCGATACCCAGCTGTGTGCACTACCTCCTT")
-        reply = reply.replace("\n", "")
-
-        # Check the format of user's answer
-        if len(reply.strip()) == 0:
+        reply = program.execute(
+            """GACGTCTGTGCAAGTACTACTGTTCTGCAGTCACTTGAATTCGATACCCAGCTGTTATTTGTATAGTTCA CTGCAGACACGTTCATGATGACAAGACGTCAGTGAACTTAAGCTATGGGTCGACAATAAACATATCAAGT""")
+        if not reply.strip():
             raise WrongAnswer("Your answer is an empty string")
-        elif ' ' in reply:
-            raise WrongAnswer("Please remove the spaces")
-        elif not reply.isupper():
-            raise WrongAnswer("Use only capital letters in your answer")
-        elif len(reply) != 70:
-            raise WrongAnswer("Total length of the answer must be 70")
 
-        # If the format is OK, let's check the content
-        # if reply[0:10] == "CTGCAGACAC" \
-        #         and reply[40:50] == "AGCTATGGGT" \
-        #         and reply[60:70] == "GATGGAGGAA":
-        #     return CheckResult.correct()
+        # change reply to list format
+        reply_list = reply.strip().split()
 
+        if len(reply_list) != 4:
+            raise WrongAnswer("Your answer should have four fragments. Two fragments on each line")
+
+        parts_len = [len(reply_list[0]), len(reply_list[1]), len(reply_list[2]), len(reply_list[3])]
+
+        if parts_len != [25, 45, 29, 41]:
+            raise WrongAnswer("One of four fragments has a wrong length.\n"
+                              "Check if each of the protruding ends is 4 nucleotides in length.")
         else:
-            if reply != CORRECT:
-                raise WrongAnswer("The output strand is wrong. Do not forget about the complementarity")
+            for part in reply_list:
+                if part not in correct_parts:
+                    raise WrongAnswer(f"This part \"{part}\" of the final output is wrong.\n"
+                                      f"Pay attention on the restriction site and plasmid sequence.")
             else:
                 return CheckResult.correct()
 
 
 if __name__ == '__main__':
-    GlowingBacteriaTest().run_tests()
+    RestrictionMakingTest().run_tests()
