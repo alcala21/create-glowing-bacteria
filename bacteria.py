@@ -1,5 +1,6 @@
-restrictases = ("CTGCAG", "GACGTC")
-cuts = {"CTGCAG": "C TGCAG", "GACGTC": "GACGT C"}
-dna_cuts = {x: y.replace(x, cuts[x]) for x, y in zip(restrictases, input().split())}
-for rest in restrictases:
-    print(dna_cuts[rest])
+complements = {"A": "T", "T": "A", "C": "G", "G": "C"}
+original = input()
+complementary = "".join(complements[x] for x in original)
+
+print(original)
+print(complementary)
